@@ -1,0 +1,48 @@
+# function to solve Towers of Hanoi puzzle recursively
+# a0 = number of disks
+# a1 = source peg
+# a2 = destination peg
+# a3 = auxiliary peg
+
+hanoi:
+    addi $sp, $sp, -16     # allocate space for stack frame
+    sw $ra, 0($sp)         # save return address on stack
+    sw $a0, 4($sp)         # save number of disks on stack
+    sw $a1, 8($sp)         # save source peg on stack
+    sw $a2, 12($sp)        # save destination peg on stack
+    
+    # base case: if there is only one disk, move it directly to the destination peg
+    lw $t0, 4($sp)         # load number of disks
+    beq $t0, 1, move_disk  # if n = 1, move disk to destination and return
+    
+    # recursive case: move n-1 disks to auxiliary peg
+    lw $t0, 4($sp)         # load number of disks
+    addi $t0, $t0, -1      # subtract 1 from n
+    move $a0, $t0          # set number of disks for recursive call
+    lw $a1, 8($sp)         # load source peg
+    lw $a2, 12($sp)        # load auxiliary peg
+    lw $a3, 8($sp)         # load destination peg
+    jal hanoi              # recursive call to move n-1 disks to auxiliary peg
+    
+    # move nth disk to destination peg
+    lw $a0, 4($sp)         # load number of disks
+    lw $a1, 8($sp)         # load source peg
+    lw $a2, 12($sp)        # load destination peg
+    lw $a3, 8($sp)         # load auxiliary peg
+    jal move_disk          # move nth disk to destination peg
+    
+    # recursive case: move n-1 disks to destination peg using source peg as auxiliary
+    lw $t0, 4($sp)         # load number of disks
+    addi $t0, $t0, -1      # subtract 1 from n
+    move $a0, $t0          # set number of disks for recursive call
+    lw $a1, 12($sp)        # load source peg
+    lw $a2, 8($sp)         # load destination peg
+    lw $a3, 8($sp)         # load auxiliary peg
+    jal hanoi              # recursive call to move n-1 disks to destination peg
+    
+    # restore stack frame and return
+    lw $a2, 12($sp)        # load destination peg from stack
+    lw $a1, 8($sp)         # load source peg from stack
+    lw $ra, 0($sp)         # restore return address from stack
+    addi $sp, $sp, 16      # deallocate stack frame
+    jr $ra                 # return to calling function
